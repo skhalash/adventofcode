@@ -84,10 +84,6 @@ func loadCommands(filepath string) ([]command, error) {
 			return nil, fmt.Errorf("failed to parse units %s: %v", parts[1], err)
 		}
 
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse line %s: %v", line, err)
-		}
-
 		result = append(result, command{commandType: commandType, units: units})
 	}
 
