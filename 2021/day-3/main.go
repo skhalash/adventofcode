@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-const recordBitCount = 12
+const valueBitCount = 12
 
 type ratingType string
 
@@ -43,26 +43,26 @@ func main() {
 }
 
 func run(filepath string) (uint64, error) {
-	entries, err := loadReport(filepath)
+	values, err := loadReport(filepath)
 	if err != nil {
 		return 0, err
 	}
 
-	return ratings(entries), nil
+	return ratings(values), nil
 }
 
-func ratings(all []uint64) uint64 {
+func ratings(values []uint64) uint64 {
 	var result uint64 = 1
 
 	for _, ratingType := range allRatingTypes() {
 		bitCriteria := bitCriteriaByRatingType(ratingType)
 
 		excluded := make(map[uint64]bool)
-		for pos := recordBitCount - 1; pos >= 0; pos-- {
-			zeros, ones := zerosOnesCount(all, pos, excluded)
+		for pos := valueBitCount - 1; pos >= 0; pos-- {
+			zeros, ones := zerosOnesCount(values, pos, excluded)
 
 			var lastNonExcluded uint64
-			for _, value := range all {
+			for _, value := range values {
 				if excluded[value] {
 					continue
 				}
@@ -74,7 +74,7 @@ func ratings(all []uint64) uint64 {
 				}
 			}
 
-			if len(all)-len(excluded) == 1 {
+			if len(values)-len(excluded) == 1 {
 				result *= lastNonExcluded
 				break
 			}
@@ -84,9 +84,9 @@ func ratings(all []uint64) uint64 {
 	return result
 }
 
-func zerosOnesCount(vals []uint64, pos int, excluded map[uint64]bool) (zeros, ones int) {
+func zerosOnesCount(values []uint64, pos int, excluded map[uint64]bool) (zeros, ones int) {
 	var mask uint64 = 1 << pos
-	for _, v := range vals {
+	for _, v := range values {
 		if _, exists := excluded[v]; exists {
 			continue
 		}
@@ -101,22 +101,22 @@ func zerosOnesCount(vals []uint64, pos int, excluded map[uint64]bool) (zeros, on
 	return
 }
 
-func oxygenGeneratorRatingCriteria(val uint64, pos, zeros, ones int) bool {
+func oxygenGeneratorRatingCriteria(value uint64, pos, zeros, ones int) bool {
 	var mostCommonBit uint64 = 0
 	if ones >= zeros {
 		mostCommonBit = 1
 	}
 
-	return mostCommonBit<<pos == val&(1<<pos)
+	return mostCommonBit<<pos == value&(1<<pos)
 }
 
-func co2ScrubberRatingCriteria(val uint64, pos, zeros, ones int) bool {
+func co2ScrubberRatingCriteria(value uint64, pos, zeros, ones int) bool {
 	var leastCommonBit uint64 = 1
 	if ones >= zeros {
 		leastCommonBit = 0
 	}
 
-	return leastCommonBit<<pos == val&(1<<pos)
+	return leastCommonBit<<pos == value&(1<<pos)
 }
 
 func loadReport(filepath string) ([]uint64, error) {
