@@ -28,8 +28,8 @@ func newBoard() *board {
 	return &board{
 		cells:                make([]int, 0, size*size),
 		marked:               make([]bool, size*size, size*size),
-		markedCountPerRow:    make([]int, size, boardSize),
-		markedCountPerColumn: make([]int, size, boardSize),
+		markedCountPerRow:    make([]int, size, size),
+		markedCountPerColumn: make([]int, size, size),
 	}
 }
 
