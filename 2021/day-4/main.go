@@ -11,8 +11,29 @@ import (
 const boardSize = 5
 
 type bingo struct {
-	numbers []int
-	boards  []*board
+	numbers          []int
+	boards           []*board
+	winnerBoardCount int
+}
+
+func (b *bingo) play() int {
+	for _, n := range b.numbers {
+		for _, board := range b.boards {
+			if board.isWinner() {
+				continue
+			}
+
+			board.mark(n)
+			if board.isWinner() {
+				b.winnerBoardCount++
+				if b.winnerBoardCount == len(b.boards) {
+					return board.score()
+				}
+			}
+		}
+	}
+
+	return 0
 }
 
 type board struct {
@@ -59,7 +80,7 @@ func (b *board) isWinner() bool {
 		}
 	}
 
-	for _, count := range b.markedCountPerRow {
+	for _, count := range b.markedCountPerColumn {
 		if count == boardSize {
 			return true
 		}
@@ -79,6 +100,21 @@ func (b *board) score() int {
 	return unmarkedSum * b.lastMarked
 }
 
+func (b *board) print() {
+	for x := 0; x < boardSize; x++ {
+		for y := 0; y < boardSize; y++ {
+			i := y + x*boardSize
+			if b.marked[i] {
+				fmt.Printf("X ")
+			} else {
+				fmt.Printf("0 ")
+			}
+		}
+
+		fmt.Println()
+	}
+}
+
 func main() {
 	result, err := run(os.Args[1])
 	if err != nil {
@@ -95,20 +131,7 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return play(bingo), nil
-}
-
-func play(b *bingo) int {
-	for _, n := range b.numbers {
-		for _, board := range b.boards {
-			board.mark(n)
-			if board.isWinner() {
-				return board.score()
-			}
-		}
-	}
-
-	return 0
+	return bingo.play(), nil
 }
 
 const numberSeparator = ","
