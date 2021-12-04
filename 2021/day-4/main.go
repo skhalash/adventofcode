@@ -16,11 +16,67 @@ type bingo struct {
 }
 
 type board struct {
-	cells []int
+	cells                []int
+	marked               []bool
+	lastMarked           int
+	markedCountPerRow    []int
+	markedCountPerColumn []int
+}
+
+func newBoard() *board {
+	size := boardSize
+	return &board{
+		cells:                make([]int, 0, size*size),
+		marked:               make([]bool, size*size, size*size),
+		markedCountPerRow:    make([]int, size, boardSize),
+		markedCountPerColumn: make([]int, size, boardSize),
+	}
 }
 
 func (b *board) isValid() bool {
 	return len(b.cells) == boardSize*boardSize
+}
+
+func (b *board) mark(n int) {
+	for i := range b.cells {
+		if b.cells[i] != n || b.marked[i] {
+			continue
+		}
+
+		b.marked[i] = true
+		row := i / boardSize
+		column := i % boardSize
+		b.markedCountPerRow[row]++
+		b.markedCountPerColumn[column]++
+		b.lastMarked = n
+	}
+}
+
+func (b *board) isWinner() bool {
+	for _, count := range b.markedCountPerRow {
+		if count == boardSize {
+			return true
+		}
+	}
+
+	for _, count := range b.markedCountPerRow {
+		if count == boardSize {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (b *board) score() int {
+	unmarkedSum := 0
+	for i, marked := range b.marked {
+		if !marked {
+			unmarkedSum += b.cells[i]
+		}
+	}
+
+	return unmarkedSum * b.lastMarked
 }
 
 func main() {
@@ -39,7 +95,20 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return len(bingo.boards), nil
+	return play(bingo), nil
+}
+
+func play(b *bingo) int {
+	for _, n := range b.numbers {
+		for _, board := range b.boards {
+			board.mark(n)
+			if board.isWinner() {
+				return board.score()
+			}
+		}
+	}
+
+	return 0
 }
 
 const numberSeparator = ","
@@ -54,7 +123,6 @@ func loadBingo(filepath string) (*bingo, error) {
 	var bingo bingo
 
 	scanner := bufio.NewScanner(file)
-
 	scanner.Scan()
 	header := scanner.Text()
 	for _, s := range strings.Split(header, numberSeparator) {
@@ -66,7 +134,6 @@ func loadBingo(filepath string) (*bingo, error) {
 	}
 
 	var last *board = nil
-
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -74,7 +141,7 @@ func loadBingo(filepath string) (*bingo, error) {
 			if last != nil && last.isValid() {
 				bingo.boards = append(bingo.boards, last)
 			}
-			last = &board{}
+			last = newBoard()
 			continue
 		}
 
