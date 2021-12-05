@@ -38,7 +38,7 @@ type ventLineGrid struct {
 
 func newVentLineGrid(lines []ventLine) *ventLineGrid {
 	lines = validate(lines)
-	origin, end := gridSize(lines)
+	origin, end := gridCorners(lines)
 	columns := end.x - origin.x + 1
 	rows := end.y - origin.y + 1
 	vlg := &ventLineGrid{
@@ -63,7 +63,7 @@ func validate(lines []ventLine) []ventLine {
 	return result
 }
 
-func gridSize(lines []ventLine) (point, point) {
+func gridCorners(lines []ventLine) (point, point) {
 	if len(lines) == 0 {
 		return point{}, point{}
 	}
