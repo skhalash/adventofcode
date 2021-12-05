@@ -25,6 +25,10 @@ func (vl *ventLine) vertical() bool {
 	return vl.from.x == vl.to.x
 }
 
+func (vl *ventLine) diagonal() bool {
+	return abs(vl.to.x-vl.from.x) == abs(vl.to.y-vl.from.y)
+}
+
 type ventLineGrid struct {
 	origin  point
 	rows    int
@@ -52,7 +56,7 @@ func newVentLineGrid(lines []ventLine) *ventLineGrid {
 func validate(lines []ventLine) []ventLine {
 	var result []ventLine
 	for _, l := range lines {
-		if l.horizontal() || l.vertical() {
+		if l.horizontal() || l.vertical() || l.diagonal() {
 			result = append(result, l)
 		}
 	}
@@ -96,24 +100,74 @@ func maxOf(vars ...int) int {
 	return max
 }
 
+func abs(x int) int {
+	if x > 0 {
+		return x
+	}
+	return -x
+}
+
 func (vlg *ventLineGrid) add(line ventLine) {
 	if line.vertical() {
-		x := line.from.x - vlg.origin.x
-		yFrom := minOf(line.from.y, line.to.y) - vlg.origin.y
-		yTo := maxOf(line.from.y, line.to.y) - vlg.origin.y
-
-		for y := yFrom; y <= yTo; y++ {
-			vlg.cells[x+y*vlg.columns]++
-		}
-	} else {
-		y := line.from.y - vlg.origin.y
-		xFrom := minOf(line.from.x, line.to.x) - vlg.origin.x
-		xTo := maxOf(line.from.x, line.to.x) - vlg.origin.x
-
-		for x := xFrom; x <= xTo; x++ {
-			vlg.cells[x+y*vlg.columns]++
-		}
+		vlg.addVertical(line)
+	} else if line.horizontal() {
+		vlg.addHorizontal(line)
+	} else if line.diagonal() {
+		vlg.addDiagonal(line)
 	}
+}
+
+func (vlg *ventLineGrid) addVertical(line ventLine) {
+	yFrom := minOf(line.from.y, line.to.y)
+	yTo := maxOf(line.from.y, line.to.y)
+
+	for y := yFrom; y <= yTo; y++ {
+		vlg.increment(line.from.x, y)
+	}
+}
+
+func (vlg *ventLineGrid) addHorizontal(line ventLine) {
+	xFrom := minOf(line.from.x, line.to.x)
+	xTo := maxOf(line.from.x, line.to.x)
+
+	for x := xFrom; x <= xTo; x++ {
+		vlg.increment(x, line.from.y)
+	}
+}
+
+func (vlg *ventLineGrid) addDiagonal(line ventLine) {
+	x, y := line.from.x, line.from.y
+	xStep := step(line.from.x, line.to.x)
+	yStep := step(line.from.y, line.to.y)
+
+	for {
+		vlg.increment(x, y)
+		if x == line.to.x && y == line.to.y {
+			break
+		}
+
+		x += xStep
+		y += yStep
+	}
+}
+
+func step(from, to int) int {
+	if from < to {
+		return 1
+	}
+	if to < from {
+		return -1
+	}
+	return 0
+}
+
+func (vlg *ventLineGrid) increment(x, y int) {
+	x, y = vlg.normalize(x, y)
+	vlg.cells[x+y*vlg.columns]++
+}
+
+func (vlg *ventLineGrid) normalize(x, y int) (int, int) {
+	return x - vlg.origin.x, y - vlg.origin.y
 }
 
 func (vlg *ventLineGrid) print() {
