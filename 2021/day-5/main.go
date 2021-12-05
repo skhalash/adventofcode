@@ -17,25 +17,43 @@ type ventLine struct {
 	from, to point
 }
 
+func (vl *ventLine) horizontal() bool {
+	return vl.from.y == vl.to.y
+}
+
+func (vl *ventLine) vertical() bool {
+	return vl.from.x == vl.to.x
+}
+
 type ventLineGrid struct {
-	from  point
-	to    point
-	cells []int
+	origin  point
+	rows    int
+	columns int
+	cells   []int
 }
 
 func newVentLineGrid(lines []ventLine) *ventLineGrid {
-	from, to := gridSize(validate(lines))
-	return &ventLineGrid{
-		from:  from,
-		to:    to,
-		cells: make([]int, (to.x-from.x)*(to.y-from.y)),
+	lines = validate(lines)
+	origin, end := gridSize(lines)
+	columns := end.x - origin.x + 1
+	rows := end.y - origin.y + 1
+
+	vlg := &ventLineGrid{
+		origin:  origin,
+		rows:    rows,
+		columns: columns,
+		cells:   make([]int, columns*rows),
 	}
+	for _, l := range lines {
+		vlg.add(l)
+	}
+	return vlg
 }
 
 func validate(lines []ventLine) []ventLine {
 	var result []ventLine
 	for _, l := range lines {
-		if l.from.x == l.to.x || l.from.y == l.to.y {
+		if l.horizontal() || l.vertical() {
 			result = append(result, l)
 		}
 	}
@@ -47,16 +65,16 @@ func gridSize(lines []ventLine) (point, point) {
 		return point{}, point{}
 	}
 
-	from := point{math.MaxInt, math.MaxInt}
-	to := point{math.MinInt, math.MinInt}
+	origin := point{math.MaxInt, math.MaxInt}
+	end := point{math.MinInt, math.MinInt}
 	for _, l := range lines {
-		from.x = minOf(l.from.x, l.to.x, from.x)
-		from.y = minOf(l.from.y, l.to.y, from.y)
+		origin.x = minOf(l.from.x, l.to.x, origin.x)
+		origin.y = minOf(l.from.y, l.to.y, origin.y)
 
-		to.x = maxOf(l.from.x, l.to.x, to.x)
-		to.y = maxOf(l.from.y, l.to.y, to.y)
+		end.x = maxOf(l.from.x, l.to.x, end.x)
+		end.y = maxOf(l.from.y, l.to.y, end.y)
 	}
-	return from, to
+	return origin, end
 }
 
 func minOf(vars ...int) int {
@@ -77,6 +95,36 @@ func maxOf(vars ...int) int {
 		}
 	}
 	return max
+}
+
+func (vlg *ventLineGrid) add(line ventLine) {
+	if line.vertical() {
+		x := line.from.x
+		yFrom := minOf(line.from.y, line.to.y) - vlg.origin.y
+		yTo := maxOf(line.from.y, line.to.y) - vlg.origin.y
+
+		for y := yFrom; y < yTo; y++ {
+			vlg.cells[x+y*vlg.columns]++
+		}
+	} else {
+		y := line.from.y
+		xFrom := minOf(line.from.x, line.to.x) - vlg.origin.x
+		xTo := maxOf(line.from.x, line.to.x) - vlg.origin.x
+
+		for x := xFrom; x < xTo; x++ {
+			vlg.cells[x+y*vlg.columns]++
+		}
+	}
+}
+
+func (vlg *ventLineGrid) print() {
+	for x := 0; x < vlg.columns; x++ {
+		for y := 0; y < vlg.rows; y++ {
+			fmt.Print(vlg.cells[y+x*vlg.columns])
+		}
+
+		fmt.Println()
+	}
 }
 
 func (vlg *ventLineGrid) dangerRate() int {
@@ -100,7 +148,10 @@ func run(filepath string) (int, error) {
 	}
 
 	grid := newVentLineGrid(lines)
-	fmt.Printf("grid from (%d, %d) to (%d, %d)\n", grid.from.x, grid.from.y, grid.to.x, grid.to.y)
+	fmt.Printf("origin: (%d, %d)\n", grid.origin.x, grid.origin.y)
+	fmt.Printf("columns: %d\n", grid.columns)
+	fmt.Printf("rows: %d\n", grid.rows)
+	grid.print()
 	return grid.dangerRate(), nil
 }
 
