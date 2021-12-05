@@ -103,7 +103,7 @@ func (vlg *ventLineGrid) add(line ventLine) {
 		yFrom := minOf(line.from.y, line.to.y) - vlg.origin.y
 		yTo := maxOf(line.from.y, line.to.y) - vlg.origin.y
 
-		for y := yFrom; y < yTo; y++ {
+		for y := yFrom; y <= yTo; y++ {
 			vlg.cells[x+y*vlg.columns]++
 		}
 	} else {
@@ -111,7 +111,7 @@ func (vlg *ventLineGrid) add(line ventLine) {
 		xFrom := minOf(line.from.x, line.to.x) - vlg.origin.x
 		xTo := maxOf(line.from.x, line.to.x) - vlg.origin.x
 
-		for x := xFrom; x < xTo; x++ {
+		for x := xFrom; x <= xTo; x++ {
 			vlg.cells[x+y*vlg.columns]++
 		}
 	}
