@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const dayCount = 80
+const dayCount = 256
 
 func main() {
 	result, err := run(os.Args[1])
@@ -21,40 +21,40 @@ func main() {
 }
 
 func run(filepath string) (int, error) {
-	fishes, err := loadFishes(filepath)
+	daysLeft, err := loadDaysLeft(filepath)
 	if err != nil {
 		return 0, err
 	}
 
-	counts := make([]int, 9, 9)
-	for _, f := range fishes {
-		counts[f]++
+	countByDaysLeft := make([]int, 9, 9)
+	for _, f := range daysLeft {
+		countByDaysLeft[f]++
 	}
 
 	for i := 0; i < dayCount; i++ {
-		counts = nextDay(counts)
+		nextDay(countByDaysLeft)
 	}
 
 	sum := 0
-	for _, c := range counts {
+	for _, c := range countByDaysLeft {
 		sum += c
 	}
 
 	return sum, nil
 }
 
-func nextDay(counts []int) []int {
-	newCounts := make([]int, len(counts), len(counts))
-	newCounts[6] = counts[0]
-	newCounts[8] = counts[0]
-	newCounts[0] = 0
+func nextDay(countByDaysLeft []int) {
+	newbornCount := countByDaysLeft[0]
+
 	for i := 1; i < 9; i++ {
-		newCounts[i-1] += counts[i]
+		countByDaysLeft[i-1] = countByDaysLeft[i]
 	}
-	return newCounts
+
+	countByDaysLeft[6] += newbornCount
+	countByDaysLeft[8] = newbornCount
 }
 
-func loadFishes(filepath string) ([]int, error) {
+func loadDaysLeft(filepath string) ([]int, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open data file: %v", err)
