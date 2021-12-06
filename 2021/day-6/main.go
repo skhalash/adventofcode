@@ -21,14 +21,14 @@ func main() {
 }
 
 func run(filepath string) (int, error) {
-	daysLeft, err := loadDaysLeft(filepath)
+	lanternfishDaysLeft, err := loadLanternfishDaysLeft(filepath)
 	if err != nil {
 		return 0, err
 	}
 
 	countByDaysLeft := make([]int, 9, 9)
-	for _, f := range daysLeft {
-		countByDaysLeft[f]++
+	for _, daysLeft := range lanternfishDaysLeft {
+		countByDaysLeft[daysLeft]++
 	}
 
 	for i := 0; i < dayCount; i++ {
@@ -46,15 +46,15 @@ func run(filepath string) (int, error) {
 func nextDay(countByDaysLeft []int) {
 	newbornCount := countByDaysLeft[0]
 
-	for i := 1; i < 9; i++ {
-		countByDaysLeft[i-1] = countByDaysLeft[i]
+	for daysLeft := 1; daysLeft < 9; daysLeft++ {
+		countByDaysLeft[daysLeft-1] = countByDaysLeft[daysLeft]
 	}
 
 	countByDaysLeft[6] += newbornCount
 	countByDaysLeft[8] = newbornCount
 }
 
-func loadDaysLeft(filepath string) ([]int, error) {
+func loadLanternfishDaysLeft(filepath string) ([]int, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open data file: %v", err)
