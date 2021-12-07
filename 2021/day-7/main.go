@@ -28,12 +28,6 @@ func run(filepath string) (int, error) {
 	return alignCrabs(crabPositions), nil
 }
 
-type ascending []int
-
-func (a ascending) Len() int           { return len(a) }
-func (a ascending) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ascending) Less(i, j int) bool { return a[i] < a[j] }
-
 func alignCrabs(crabPositions []int) int {
 	first, last := minMax(crabPositions)
 	minFuel := math.MaxInt
