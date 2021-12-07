@@ -25,16 +25,21 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return alignCrabs(crabPositions), nil
+	crabCountByPosition := make(map[int]int)
+	for _, pos := range crabPositions {
+		crabCountByPosition[pos]++
+	}
+
+	return alignCrabs(crabCountByPosition), nil
 }
 
-func alignCrabs(crabPositions []int) int {
-	first, last := minMax(crabPositions)
+func alignCrabs(crabCountByPosition map[int]int) int {
+	minPos, maxPos := minMaxPosition(crabCountByPosition)
 	minFuel := math.MaxInt
-	for i := first; i < last; i++ {
+	for i := minPos; i < maxPos; i++ {
 		fuel := 0
-		for _, pos := range crabPositions {
-			fuel += fuelSpent(abs(pos - i))
+		for pos, count := range crabCountByPosition {
+			fuel += count * fuelSpent(abs(pos-i))
 		}
 		minFuel = min(minFuel, fuel)
 	}
@@ -42,14 +47,14 @@ func alignCrabs(crabPositions []int) int {
 	return minFuel
 }
 
-func minMax(values []int) (int, int) {
+func minMaxPosition(crabCountByPosition map[int]int) (int, int) {
 	min, max := math.MaxInt, math.MinInt
-	for _, value := range values {
-		if max < value {
-			max = value
+	for pos := range crabCountByPosition {
+		if max < pos {
+			max = pos
 		}
-		if min > value {
-			min = value
+		if min > pos {
+			min = pos
 		}
 	}
 	return min, max
