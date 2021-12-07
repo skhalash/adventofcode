@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -27,8 +28,55 @@ func run(filepath string) (int, error) {
 	return alignCrabs(crabPositions), nil
 }
 
+type ascending []int
+
+func (a ascending) Len() int           { return len(a) }
+func (a ascending) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ascending) Less(i, j int) bool { return a[i] < a[j] }
+
 func alignCrabs(crabPositions []int) int {
-	return 0
+	first, last := minMax(crabPositions)
+	minFuel := math.MaxInt
+	for i := first; i < last; i++ {
+		fuel := 0
+		for _, pos := range crabPositions {
+			fuel += fuelSpent(abs(pos - i))
+		}
+		minFuel = min(minFuel, fuel)
+	}
+
+	return minFuel
+}
+
+func minMax(values []int) (int, int) {
+	min, max := math.MaxInt, math.MinInt
+	for _, value := range values {
+		if max < value {
+			max = value
+		}
+		if min > value {
+			min = value
+		}
+	}
+	return min, max
+}
+
+func abs(x int) int {
+	if x > 0 {
+		return x
+	}
+	return -x
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func fuelSpent(distance int) int {
+	return distance * (distance + 1) / 2
 }
 
 func loadCrabPositions(filepath string) ([]int, error) {
