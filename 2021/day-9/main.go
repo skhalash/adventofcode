@@ -40,29 +40,50 @@ func run(filepath string) (int, error) {
 }
 
 func riskLevel(heightmap [][]int) int {
+	riskLevel := 0
+	for _, lp := range lowPoints(heightmap) {
+		riskLevel += (lp + 1)
+	}
+	return riskLevel
+}
+
+func lowPoints(heightmap [][]int) []int {
 	var lowPoints []int
 	for i := 0; i < len(heightmap); i++ {
 		for j := 0; j < len(heightmap[i]); j++ {
 			val := heightmap[i][j]
-
-			upLower := i > 0 && heightmap[i-1][j] <= val
-			downLower := i < len(heightmap)-1 && heightmap[i+1][j] <= val
-			leftLower := j > 0 && heightmap[i][j-1] <= val
-			rightLower := j < len(heightmap[i])-1 && heightmap[i][j+1] <= val
-			if upLower || downLower || leftLower || rightLower {
-				continue
+			isLow := true
+			for _, n := range neigbours(i, j, heightmap) {
+				if n <= val {
+					isLow = false
+					break
+				}
 			}
 
-			lowPoints = append(lowPoints, val)
-
+			if isLow {
+				lowPoints = append(lowPoints, val)
+			}
 		}
 	}
 
-	riskLevel := 0
-	for _, lp := range lowPoints {
-		riskLevel += (lp + 1)
+	return lowPoints
+}
+
+func neigbours(i, j int, heightmap [][]int) []int {
+	var neigbours []int
+	if i > 0 {
+		neigbours = append(neigbours, heightmap[i-1][j])
 	}
-	return riskLevel
+	if i < len(heightmap)-1 {
+		neigbours = append(neigbours, heightmap[i+1][j])
+	}
+	if j > 0 {
+		neigbours = append(neigbours, heightmap[i][j-1])
+	}
+	if j < len(heightmap[i])-1 {
+		neigbours = append(neigbours, heightmap[i][j+1])
+	}
+	return neigbours
 }
 
 func loadHeightmap(filepath string) ([][]int, error) {
