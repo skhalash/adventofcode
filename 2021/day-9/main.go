@@ -36,14 +36,38 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
+	return riskLevel(heightmap), nil
+}
+
+func riskLevel(heightmap [][]int) int {
+	var lowPoints []int
 	for i := 0; i < len(heightmap); i++ {
 		for j := 0; j < len(heightmap[i]); j++ {
-			fmt.Print(heightmap[i][j], " ")
+			val := heightmap[i][j]
+
+			if i > 0 && heightmap[i-1][j] <= val {
+				continue
+			}
+			if i < len(heightmap)-1 && heightmap[i+1][j] <= val {
+				continue
+			}
+			if j > 0 && heightmap[i][j-1] <= val {
+				continue
+			}
+			if j < len(heightmap[i])-1 && heightmap[i][j+1] <= val {
+				continue
+			}
+
+			lowPoints = append(lowPoints, val)
+
 		}
-		fmt.Println()
 	}
 
-	return 0, nil
+	riskLevel := 0
+	for _, lp := range lowPoints {
+		riskLevel += (lp + 1)
+	}
+	return riskLevel
 }
 
 func loadHeightmap(filepath string) ([][]int, error) {
