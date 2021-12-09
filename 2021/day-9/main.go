@@ -4,20 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
-var originalPatterns = []string{
-	"abcefg",
-	"cf",
-	"acdeg",
-	"acdfg",
-	"bcdf",
-	"abdfg",
-	"abdefg",
-	"acf",
-	"abcdefg",
-	"abcdfg",
+type point struct {
+	i, j   int
+	height int
 }
 
 func main() {
@@ -36,32 +29,31 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return riskLevel(heightmap), nil
-}
-
-func riskLevel(heightmap [][]int) int {
-	riskLevel := 0
-	for _, lp := range lowPoints(heightmap) {
-		riskLevel += (lp + 1)
+	var basinSizes []int
+	for _, pt := range lowPoints(heightmap) {
+		basinSizes = append(basinSizes, basin(pt, heightmap))
 	}
-	return riskLevel
+
+	sort.Sort(sort.IntSlice(basinSizes))
+	last := len(basinSizes) - 1
+	return basinSizes[last] * basinSizes[last-1] * basinSizes[last-2], nil
 }
 
-func lowPoints(heightmap [][]int) []int {
-	var lowPoints []int
+func lowPoints(heightmap [][]int) []point {
+	var lowPoints []point
 	for i := 0; i < len(heightmap); i++ {
 		for j := 0; j < len(heightmap[i]); j++ {
-			val := heightmap[i][j]
+			height := heightmap[i][j]
 			isLow := true
-			for _, n := range neigbours(i, j, heightmap) {
-				if n <= val {
+			for _, n := range neigbours(point{i, j, height}, heightmap) {
+				if n.height <= height {
 					isLow = false
 					break
 				}
 			}
 
 			if isLow {
-				lowPoints = append(lowPoints, val)
+				lowPoints = append(lowPoints, point{i, j, height})
 			}
 		}
 	}
@@ -69,19 +61,41 @@ func lowPoints(heightmap [][]int) []int {
 	return lowPoints
 }
 
-func neigbours(i, j int, heightmap [][]int) []int {
-	var neigbours []int
+func basin(pt point, heightmap [][]int) int {
+	visited := make(map[point]bool)
+	dfs(pt, heightmap, visited)
+	return len(visited)
+}
+
+func dfs(pt point, heightmap [][]int, visited map[point]bool) {
+	for _, neighbour := range neigbours(pt, heightmap) {
+		if neighbour.height == 9 {
+			continue
+		}
+
+		if _, found := visited[neighbour]; found {
+			continue
+		}
+
+		visited[neighbour] = true
+		dfs(neighbour, heightmap, visited)
+	}
+}
+
+func neigbours(pt point, heightmap [][]int) []point {
+	var neigbours []point
+	i, j := pt.i, pt.j
 	if i > 0 {
-		neigbours = append(neigbours, heightmap[i-1][j])
+		neigbours = append(neigbours, point{i - 1, j, heightmap[i-1][j]})
 	}
 	if i < len(heightmap)-1 {
-		neigbours = append(neigbours, heightmap[i+1][j])
+		neigbours = append(neigbours, point{i + 1, j, heightmap[i+1][j]})
 	}
 	if j > 0 {
-		neigbours = append(neigbours, heightmap[i][j-1])
+		neigbours = append(neigbours, point{i, j - 1, heightmap[i][j-1]})
 	}
 	if j < len(heightmap[i])-1 {
-		neigbours = append(neigbours, heightmap[i][j+1])
+		neigbours = append(neigbours, point{i, j + 1, heightmap[i][j+1]})
 	}
 	return neigbours
 }
