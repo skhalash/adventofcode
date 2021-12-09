@@ -45,11 +45,11 @@ func riskLevel(heightmap [][]int) int {
 		for j := 0; j < len(heightmap[i]); j++ {
 			val := heightmap[i][j]
 
-			upperLower := i > 0 && heightmap[i-1][j] <= val
-			lowerLower := i < len(heightmap)-1 && heightmap[i+1][j] <= val
+			upLower := i > 0 && heightmap[i-1][j] <= val
+			downLower := i < len(heightmap)-1 && heightmap[i+1][j] <= val
 			leftLower := j > 0 && heightmap[i][j-1] <= val
 			rightLower := j < len(heightmap[i])-1 && heightmap[i][j+1] <= val
-			if upperLower || lowerLower || leftLower || rightLower {
+			if upLower || downLower || leftLower || rightLower {
 				continue
 			}
 
