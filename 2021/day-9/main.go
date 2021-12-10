@@ -110,17 +110,17 @@ func loadHeightmap(filepath string) ([][]int, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		var raw []int
+		var row []int
 		line := scanner.Text()
 		for _, char := range line {
 			n, err := strconv.Atoi(string(char))
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse number: %v", err)
 			}
-			raw = append(raw, n)
+			row = append(row, n)
 		}
 
-		result = append(result, raw)
+		result = append(result, row)
 	}
 
 	return result, nil
