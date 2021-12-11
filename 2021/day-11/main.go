@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+type coordinate struct {
+	x, y int
+}
+
 func main() {
 	result, err := run(os.Args[1])
 	if err != nil {
@@ -24,7 +28,7 @@ func run(filepath string) (int, error) {
 	}
 
 	totalFlashes := 0
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 100; i++ {
 		stepFlashes := nextStep(octopuses)
 		totalFlashes += stepFlashes
 	}
@@ -39,30 +43,21 @@ func nextStep(octopuses [][]int) int {
 		}
 	}
 
+	flashed := make(map[coordinate]bool)
+
 	for x := 0; x < len(octopuses); x++ {
 		for y := 0; y < len(octopuses[x]); y++ {
 			if energized(x, y, octopuses) {
-				flash(x, y, octopuses)
+				flash(coordinate{x, y}, octopuses, flashed)
 			}
 		}
 	}
 
-	flashes := 0
-	for x := 0; x < len(octopuses); x++ {
-		for y := 0; y < len(octopuses[x]); y++ {
-			if octopuses[x][y] == 0 {
-				flashes++
-			}
-			fmt.Printf("%d ", octopuses[x][y])
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-	return flashes
+	return len(flashed)
 }
 
-func flash(x, y int, octopuses [][]int) {
-	octopuses[x][y] = 0
+func flash(current coordinate, octopuses [][]int, flashed map[coordinate]bool) {
+	flashed[current] = true
 
 	for dx := -1; dx <= 1; dx++ {
 		for dy := -1; dy <= 1; dy++ {
@@ -70,19 +65,26 @@ func flash(x, y int, octopuses [][]int) {
 				continue
 			}
 
-			adjX := x + dx
-			adjY := y + dy
-			hasAdjacent := adjX >= 0 && adjX < len(octopuses) && adjY >= 0 && adjY < len(octopuses[x])
+			adjX := current.x + dx
+			adjY := current.y + dy
+			hasAdjacent := adjX >= 0 && adjX < len(octopuses) && adjY >= 0 && adjY < len(octopuses[current.x])
 			if !hasAdjacent {
+				continue
+			}
+
+			adjacent := coordinate{adjX, adjY}
+			if flashed[adjacent] {
 				continue
 			}
 
 			octopuses[adjX][adjY]++
 			if energized(adjX, adjY, octopuses) {
-				flash(adjX, adjY, octopuses)
+				flash(adjacent, octopuses, flashed)
 			}
 		}
 	}
+
+	octopuses[current.x][current.y] = 0
 }
 
 func energized(i, j int, octopuses [][]int) bool {
