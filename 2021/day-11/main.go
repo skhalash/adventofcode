@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+const gridSize = 10
+
 type coordinate struct {
 	x, y int
 }
@@ -27,33 +29,36 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	totalFlashes := 0
-	for i := 0; i < 100; i++ {
-		stepFlashes := nextStep(octopuses)
-		totalFlashes += stepFlashes
+	step := 0
+	for {
+		allFlashed := nextStep(octopuses)
+		step++
+		if allFlashed {
+			break
+		}
 	}
 
-	return totalFlashes, nil
+	return step, nil
 }
 
-func nextStep(octopuses [][]int) int {
-	for x := 0; x < len(octopuses); x++ {
-		for y := 0; y < len(octopuses[x]); y++ {
+func nextStep(octopuses [][]int) bool {
+	for x := 0; x < gridSize; x++ {
+		for y := 0; y < gridSize; y++ {
 			octopuses[x][y]++
 		}
 	}
 
 	flashed := make(map[coordinate]bool)
 
-	for x := 0; x < len(octopuses); x++ {
-		for y := 0; y < len(octopuses[x]); y++ {
+	for x := 0; x < gridSize; x++ {
+		for y := 0; y < gridSize; y++ {
 			if energized(x, y, octopuses) {
 				flash(coordinate{x, y}, octopuses, flashed)
 			}
 		}
 	}
 
-	return len(flashed)
+	return len(flashed) == gridSize*gridSize
 }
 
 func flash(current coordinate, octopuses [][]int, flashed map[coordinate]bool) {
@@ -67,7 +72,7 @@ func flash(current coordinate, octopuses [][]int, flashed map[coordinate]bool) {
 
 			adjX := current.x + dx
 			adjY := current.y + dy
-			hasAdjacent := adjX >= 0 && adjX < len(octopuses) && adjY >= 0 && adjY < len(octopuses[current.x])
+			hasAdjacent := adjX >= 0 && adjX < gridSize && adjY >= 0 && adjY < gridSize
 			if !hasAdjacent {
 				continue
 			}
@@ -103,6 +108,10 @@ func loadOctopusGrid(filepath string) ([][]int, error) {
 	for scanner.Scan() {
 		var row []int
 		line := scanner.Text()
+		if len(line) != gridSize {
+			return nil, fmt.Errorf("must have %d columns", gridSize)
+		}
+
 		for _, char := range line {
 			n, err := strconv.Atoi(string(char))
 			if err != nil {
@@ -112,6 +121,10 @@ func loadOctopusGrid(filepath string) ([][]int, error) {
 		}
 
 		result = append(result, row)
+	}
+
+	if len(result) != gridSize {
+		return nil, fmt.Errorf("must have %d rows", gridSize)
 	}
 
 	return result, nil
