@@ -45,7 +45,7 @@ func lowPoints(heightmap [][]int) []point {
 		for j := 0; j < len(heightmap[i]); j++ {
 			height := heightmap[i][j]
 			isLow := true
-			for _, n := range neigbours(point{i, j, height}, heightmap) {
+			for _, n := range neighbours(point{i, j, height}, heightmap) {
 				if n.height <= height {
 					isLow = false
 					break
@@ -68,7 +68,7 @@ func basin(pt point, heightmap [][]int) int {
 }
 
 func dfs(pt point, heightmap [][]int, visited map[point]bool) {
-	for _, neighbour := range neigbours(pt, heightmap) {
+	for _, neighbour := range neighbours(pt, heightmap) {
 		if neighbour.height == 9 {
 			continue
 		}
@@ -82,22 +82,22 @@ func dfs(pt point, heightmap [][]int, visited map[point]bool) {
 	}
 }
 
-func neigbours(pt point, heightmap [][]int) []point {
-	var neigbours []point
+func neighbours(pt point, heightmap [][]int) []point {
+	var neighbours []point
 	i, j := pt.i, pt.j
 	if i > 0 {
-		neigbours = append(neigbours, point{i - 1, j, heightmap[i-1][j]})
+		neighbours = append(neighbours, point{i - 1, j, heightmap[i-1][j]})
 	}
 	if i < len(heightmap)-1 {
-		neigbours = append(neigbours, point{i + 1, j, heightmap[i+1][j]})
+		neighbours = append(neighbours, point{i + 1, j, heightmap[i+1][j]})
 	}
 	if j > 0 {
-		neigbours = append(neigbours, point{i, j - 1, heightmap[i][j-1]})
+		neighbours = append(neighbours, point{i, j - 1, heightmap[i][j-1]})
 	}
 	if j < len(heightmap[i])-1 {
-		neigbours = append(neigbours, point{i, j + 1, heightmap[i][j+1]})
+		neighbours = append(neighbours, point{i, j + 1, heightmap[i][j+1]})
 	}
-	return neigbours
+	return neighbours
 }
 
 func loadHeightmap(filepath string) ([][]int, error) {

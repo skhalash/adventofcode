@@ -156,7 +156,7 @@ func loadBingo(filepath string) (*bingo, error) {
 		bingo.numbers = append(bingo.numbers, number)
 	}
 
-	var last *board = nil
+	var last *board
 	for scanner.Scan() {
 		line := scanner.Text()
 

@@ -102,7 +102,7 @@ func zerosOnesCount(values []uint64, pos int, excluded map[uint64]bool) (zeros, 
 }
 
 func oxygenGeneratorRatingCriteria(value uint64, pos, zeros, ones int) bool {
-	var mostCommonBit uint64 = 0
+	var mostCommonBit uint64
 	if ones >= zeros {
 		mostCommonBit = 1
 	}
