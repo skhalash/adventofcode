@@ -48,9 +48,9 @@ func newBoard() *board {
 	size := boardSize
 	return &board{
 		cells:                make([]int, 0, size*size),
-		marked:               make([]bool, size*size, size*size),
-		markedCountPerRow:    make([]int, size, size),
-		markedCountPerColumn: make([]int, size, size),
+		marked:               make([]bool, size*size),
+		markedCountPerRow:    make([]int, size),
+		markedCountPerColumn: make([]int, size),
 	}
 }
 
@@ -98,21 +98,6 @@ func (b *board) score() int {
 	}
 
 	return unmarkedSum * b.lastMarked
-}
-
-func (b *board) print() {
-	for x := 0; x < boardSize; x++ {
-		for y := 0; y < boardSize; y++ {
-			i := y + x*boardSize
-			if b.marked[i] {
-				fmt.Printf("X ")
-			} else {
-				fmt.Printf("0 ")
-			}
-		}
-
-		fmt.Println()
-	}
 }
 
 func main() {

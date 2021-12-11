@@ -81,7 +81,7 @@ func run(filepath string) (int, error) {
 }
 
 func deduceDigits(patterns []pattern) []pattern {
-	patternByDigit := make([]pattern, 10, 10)
+	patternByDigit := make([]pattern, 10)
 	patternByDigit[1] = single(byLen(patterns, 2))
 	patternByDigit[4] = single(byLen(patterns, 4))
 	patternByDigit[7] = single(byLen(patterns, 3))

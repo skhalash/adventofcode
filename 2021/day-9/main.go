@@ -34,7 +34,7 @@ func run(filepath string) (int, error) {
 		basinSizes = append(basinSizes, basin(pt, heightmap))
 	}
 
-	sort.Sort(sort.IntSlice(basinSizes))
+	sort.Ints(basinSizes)
 	last := len(basinSizes) - 1
 	return basinSizes[last] * basinSizes[last-1] * basinSizes[last-2], nil
 }

@@ -51,7 +51,7 @@ func run(filepath string) (int, error) {
 		}
 	}
 
-	sort.Sort(sort.IntSlice(scores))
+	sort.Ints(scores)
 
 	return scores[len(scores)/2], nil
 }
