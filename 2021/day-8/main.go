@@ -24,11 +24,11 @@ func byLen(patterns []pattern, l int) []pattern {
 	return result
 }
 
-func single(signals []pattern) pattern {
-	if len(signals) != 1 {
-		panic(fmt.Sprintf("must contain single elem %#v", signals))
+func single(patterns []pattern) pattern {
+	if len(patterns) != 1 {
+		panic(fmt.Sprintf("must contain single elem %#v", patterns))
 	}
-	return signals[0]
+	return patterns[0]
 }
 
 func (p pattern) union(other pattern) pattern {
