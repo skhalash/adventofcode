@@ -170,16 +170,6 @@ func (vlg *ventLineGrid) normalize(x, y int) (int, int) {
 	return x - vlg.origin.x, y - vlg.origin.y
 }
 
-func (vlg *ventLineGrid) print() {
-	for x := 0; x < vlg.columns; x++ {
-		for y := 0; y < vlg.rows; y++ {
-			fmt.Print(vlg.cells[y+x*vlg.columns])
-		}
-
-		fmt.Println()
-	}
-}
-
 func (vlg *ventLineGrid) dangerRate() int {
 	rate := 0
 	for _, c := range vlg.cells {

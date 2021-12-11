@@ -26,7 +26,7 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	countByDaysLeft := make([]int, 9, 9)
+	countByDaysLeft := make([]int, 9)
 	for _, daysLeft := range lanternfishDaysLeft {
 		countByDaysLeft[daysLeft]++
 	}
