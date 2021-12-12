@@ -19,6 +19,10 @@ func (n node) end() bool {
 	return n.name == "end"
 }
 
+func (n node) small() bool {
+	return strings.ToLower(n.name) == n.name
+}
+
 type graph struct {
 	adjacent map[node][]node
 }
@@ -57,21 +61,12 @@ func (g *graph) addEdge(from, to node) {
 
 type path []node
 
-func (s path) push(n node) path {
-	return append(s, n)
+func (p *path) push(n node) {
+	*p = append(*p, n)
 }
 
-func (p path) pop() (path, node) {
-	if p.empty() {
-		return p, node{}
-	}
-
-	lastIndex := len(p) - 1
-	return p[:lastIndex], p[lastIndex]
-}
-
-func (p *path) empty() bool {
-	return len(*p) == 0
+func (p *path) pop() {
+	*p = (*p)[:len(*p)-1]
 }
 
 func main() {
@@ -90,20 +85,42 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return len(allPaths(g)), nil
+	return allPathCount(g), nil
 }
 
-func allPaths(g *graph) []path {
-	seen := make(map[node]bool)
-	var current path
-	var all []path
+var seen map[node]bool
+var current path
+var count int
 
-	dfs(g.start(), g, seen, current, all)
-	return all
+func allPathCount(g *graph) int {
+	seen = make(map[node]bool)
+	dfs(g.start(), g)
+	return count
 }
 
-func dfs(n node, g *graph, seen map[node]bool, current path, all []path) {
+func dfs(n node, g *graph) {
+	if n.small() {
+		if seen, exists := seen[n]; exists && seen {
+			return
+		}
+		seen[n] = true
+	}
 
+	current.push(n)
+
+	if n.end() {
+		count++
+		seen[n] = false
+		current.pop()
+		return
+	}
+
+	for _, next := range g.neighbours(n) {
+		dfs(next, g)
+	}
+
+	current.pop()
+	seen[n] = false
 }
 
 func loadGraph(filepath string) (*graph, error) {
@@ -123,6 +140,7 @@ func loadGraph(filepath string) (*graph, error) {
 		}
 
 		graph.addEdge(node{parts[0]}, node{parts[1]})
+		graph.addEdge(node{parts[1]}, node{parts[0]})
 	}
 
 	return graph, nil
