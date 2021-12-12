@@ -11,6 +11,14 @@ type node struct {
 	name string
 }
 
+func (n node) start() bool {
+	return n.name == "start"
+}
+
+func (n node) end() bool {
+	return n.name == "end"
+}
+
 type graph struct {
 	adjacent map[node][]node
 }
@@ -19,6 +27,16 @@ func newGraph() *graph {
 	return &graph{
 		adjacent: make(map[node][]node),
 	}
+}
+
+func (g *graph) start() node {
+	for _, n := range g.nodes() {
+		if n.start() {
+			return n
+		}
+	}
+
+	return node{}
 }
 
 func (g *graph) nodes() []node {
@@ -37,6 +55,25 @@ func (g *graph) addEdge(from, to node) {
 	g.adjacent[from] = append(g.adjacent[from], to)
 }
 
+type path []node
+
+func (s path) push(n node) path {
+	return append(s, n)
+}
+
+func (p path) pop() (path, node) {
+	if p.empty() {
+		return p, node{}
+	}
+
+	lastIndex := len(p) - 1
+	return p[:lastIndex], p[lastIndex]
+}
+
+func (p *path) empty() bool {
+	return len(*p) == 0
+}
+
 func main() {
 	result, err := run(os.Args[1])
 	if err != nil {
@@ -48,12 +85,25 @@ func main() {
 }
 
 func run(filepath string) (int, error) {
-	_, err := loadGraph(filepath)
+	g, err := loadGraph(filepath)
 	if err != nil {
 		return 0, err
 	}
 
-	return 0, nil
+	return len(allPaths(g)), nil
+}
+
+func allPaths(g *graph) []path {
+	seen := make(map[node]bool)
+	var current path
+	var all []path
+
+	dfs(g.start(), g, seen, current, all)
+	return all
+}
+
+func dfs(n node, g *graph, seen map[node]bool, current path, all []path) {
+
 }
 
 func loadGraph(filepath string) (*graph, error) {
