@@ -59,16 +59,6 @@ func (g *graph) addEdge(from, to node) {
 	g.adjacent[from] = append(g.adjacent[from], to)
 }
 
-type path []node
-
-func (p *path) push(n node) {
-	*p = append(*p, n)
-}
-
-func (p *path) pop() {
-	*p = (*p)[:len(*p)-1]
-}
-
 func main() {
 	result, err := run(os.Args[1])
 	if err != nil {
@@ -85,42 +75,39 @@ func run(filepath string) (int, error) {
 		return 0, err
 	}
 
-	return allPathCount(g), nil
+	return dfs(g.start(), g, make(map[node]bool), true), nil
 }
 
-var seen map[node]bool
-var current path
-var count int
+func dfs(n node, g *graph, seen map[node]bool, canRevisit bool) int {
+	if n.end() {
+		return 1
+	}
 
-func allPathCount(g *graph) int {
-	seen = make(map[node]bool)
-	dfs(g.start(), g)
-	return count
-}
-
-func dfs(n node, g *graph) {
 	if n.small() {
 		if seen, exists := seen[n]; exists && seen {
-			return
+			if !canRevisit || n.start() {
+				return 0
+			}
+			if !n.start() {
+				canRevisit = false
+			}
 		}
 		seen[n] = true
 	}
 
-	current.push(n)
-
-	if n.end() {
-		count++
-		seen[n] = false
-		current.pop()
-		return
-	}
-
+	total := 0
 	for _, next := range g.neighbours(n) {
-		dfs(next, g)
+		total += dfs(next, g, copy(seen), canRevisit)
 	}
+	return total
+}
 
-	current.pop()
-	seen[n] = false
+func copy(source map[node]bool) map[node]bool {
+	result := make(map[node]bool)
+	for k, v := range source {
+		result[k] = v
+	}
+	return result
 }
 
 func loadGraph(filepath string) (*graph, error) {
